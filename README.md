@@ -1,6 +1,6 @@
 # spotify-listening-analysis
 Exploratory Data Analysis of personal Spotify listening behavior
-# Spotify Listening Analysis 🎧
+# Spotify Listening Analysis 
 
 This project analyzes my personal Spotify streaming history to understand
 listening patterns, artist preferences, and time-based behavior.

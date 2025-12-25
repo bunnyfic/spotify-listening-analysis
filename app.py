@@ -33,10 +33,18 @@ h1, h2, h3 {
 st.title("🎧 Spotify Listening Behavior Dashboard")
 st.caption("EDA + Gradient Boosting ML | Ethical & Realistic Evaluation")
 
-# ---------------- LOAD DATA ----------------
-with open('StreamingHistory_music_0.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
+# ---------------- FILE UPLOADER (FIX) ----------------
+uploaded_file = st.file_uploader(
+    "Upload your Spotify StreamingHistory_music_0.json file",
+    type=["json"]
+)
 
+if uploaded_file is None:
+    st.info("Please upload your Spotify streaming history JSON file to view the dashboard.")
+    st.stop()
+
+# ---------------- LOAD DATA ----------------
+data = json.loads(uploaded_file.read().decode("utf-8"))
 df = pd.DataFrame(data)
 
 # ---------------- CLEANING ----------------
@@ -97,7 +105,7 @@ pd.Series(df['time_period']).map({1:"Day",0:"Night"}).value_counts().plot(
 )
 axs[1,1].set_title("Day vs Night Usage", color=neon)
 
-# Empty cell for spacing
+# Empty cell
 axs[1,2].axis('off')
 
 for ax in axs.flat:
@@ -108,10 +116,9 @@ st.pyplot(fig)
 
 st.divider()
 
-# ---------------- ML SECTION (GRADIENT BOOSTING) ----------------
+# ---------------- ML SECTION ----------------
 st.subheader("🤖 ML Prediction: Day vs Night Listening")
 
-# ❌ hour NOT included (avoids leakage)
 X = df[['minutesPlayed']]
 y = df['time_period']
 
@@ -134,10 +141,9 @@ gb.fit(X_train, y_train)
 y_pred = gb.predict(X_test)
 accuracy = round(accuracy_score(y_test, y_pred) * 100, 2)
 
-# Accuracy metric
 st.metric("Gradient Boosting Accuracy", f"{accuracy}%")
 
-# ---------------- CLASSIFICATION REPORT TABLE ----------------
+# ---------------- CLASSIFICATION REPORT ----------------
 report = classification_report(
     y_test,
     y_pred,
@@ -147,9 +153,7 @@ report = classification_report(
 report_df = pd.DataFrame(report).transpose()
 
 st.subheader("📊 Model Evaluation Table")
-st.dataframe(
-    report_df.style.format("{:.2f}")
-)
+st.dataframe(report_df.style.format("{:.2f}"))
 
 st.markdown("""
 **Model summary**
@@ -157,8 +161,7 @@ st.markdown("""
 - Feature used: Listening session duration  
 - Target: Day vs Night listening  
 
-The modest accuracy improvement over Random Forest reflects better handling of misclassified cases,
-while still preserving realistic and ethical model evaluation.
+The modest accuracy reflects ethical evaluation without data leakage.
 """)
 
 st.caption("Built with Python • Pandas • Matplotlib • Scikit-learn • Streamlit")
